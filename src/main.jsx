@@ -6,6 +6,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Home from './home'
 import LandingPage from './LandingPage'
 import AuthPage from './AuthPage'
+import SignUpPage from './SignUpPage'
 import Contact from './contact'
 import { ClerkProvider } from '@clerk/clerk-react'
 import Profile from './profile'
@@ -21,8 +22,12 @@ const router=createBrowserRouter([
       element:<LandingPage/>
     },
     {
-      path:'/auth',
+      path:'/auth/*',
       element:<AuthPage/>
+    },
+    { 
+      path:'/sign-up/*',
+      element:<SignUpPage/>
     },
     {
       path:'/home',

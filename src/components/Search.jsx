@@ -1,67 +1,129 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Separator } from './ui/separator'
 import { CiSearch } from "react-icons/ci";
-import Data from '@/Shared/Data';
 import { Link } from 'react-router-dom';
+import { db } from '../../configs';
+import { CarListing } from '../../configs/schema';
+import Data from '@/Shared/Data';
+
 function Search() {
+  const [cars, setCars] = useState("");
+  const [make, setMake] = useState("");
+  const [price, setPrice] = useState("");
+  const [makes, setMakes] = useState([]);
 
-    const [cars,setCars]=useState();
-    const [make,setMake]=useState();
-    const [price,setPrice]=useState();
+  // 🔹 fetch distinct car makes from DB
+  useEffect(() => {
+    const fetchMakes = async () => {
+      try {
+        const result = await db
+          .select({ make: CarListing.make })
+          .from(CarListing)
+          .groupBy(CarListing.make);
 
+        const uniqueMakes = result.map((row) => row.make).filter(Boolean);
+        setMakes(uniqueMakes);
+      } catch (err) {
+        console.error("Error fetching makes:", err);
+      }
+    };
+    fetchMakes();
+  }, []);
+
+  // build query string safely
+  const query = new URLSearchParams();
+  if (cars) query.set("cars", cars);
+  if (make) query.set("make", make);
+  if (price) query.set("price", price);
 
   return (
-    <div className=' p-2 md:p-5 bg-white rounded-md 
+    <div
+      className="p-2 md:p-5 bg-white rounded-md 
     md:rounded-full flex-col md:flex md:flex-row gap-10 px-5 items-center
-    w-[60%] '>
-        <Select onValueChange={(value)=>setCars(value)}>
-        <SelectTrigger  className="outline-none md:border-none w-full shadow-none text-lg">
-            <SelectValue placeholder="Cars" />
+    w-[60%]"
+    >
+      {/* Condition */}
+      <Select onValueChange={(value) => setCars(value)}>
+        <SelectTrigger className="outline-none md:border-none w-full shadow-none text-lg">
+          <SelectValue placeholder="Cars" />
         </SelectTrigger>
         <SelectContent>
-            <SelectItem value="New">New</SelectItem>
-            <SelectItem value="Used">Used</SelectItem>
-            <SelectItem value="Certified Pre-Owned">Certified Pre-Owned</SelectItem>
+          <SelectItem value="New">New</SelectItem>
+          <SelectItem value="Used">Used</SelectItem>
+          <SelectItem value="Certified Pre-Owned">Certified Pre-Owned</SelectItem>
         </SelectContent>
-        </Select>
+      </Select>
 
-        <Separator orientation="vertical" className="hidden md:block"  />
-       
-        <Select onValueChange={(value)=>setMake(value)}>
-        <SelectTrigger  className="outline-none md:border-none w-full shadow-none text-lg">
-            <SelectValue placeholder="Car Makes" />
+      <Separator orientation="vertical" className="hidden md:block" />
+
+      {/* Car Makes (dynamic) */}
+      <Select onValueChange={(value) => setMake(value)}>
+        <SelectTrigger className="outline-none md:border-none w-full shadow-none text-lg">
+          <SelectValue placeholder="Car Makes" />
+        </SelectTrigger>
+        {/* DYNAMIC TAKING FROM CARLISTINGS FROM NEON_DB*/}
+        <SelectContent>
+          {makes.length > 0 ? (
+            makes.map((maker, index) => (
+              <SelectItem key={index} value={maker}>
+                {maker}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem disabled>No makes found</SelectItem>
+          )}
+        </SelectContent>
+        {/* STATIC TAKING FROM SHARED/DATA */}
+        {/* <SelectContent>
+        {Data.CarMakes.map((maker, index) => (
+            <SelectItem key={index} value={maker.name}>
+            {maker.name}
+            </SelectItem>
+        ))}
+        </SelectContent> */}
+      </Select>
+
+      <Separator orientation="vertical" className="hidden md:block" />
+
+      {/* Pricing (fixed ranges) */}
+      {/* <Select onValueChange={(value) => setPrice(value)}>
+        <SelectTrigger className="outline-none md:border-none w-full shadow-none text-lg">
+          <SelectValue placeholder="Pricing" />
         </SelectTrigger>
         <SelectContent>
-            {Data.CarMakes.map((maker,index)=>(
-                <SelectItem value={maker.name}>{maker.name}</SelectItem>
-            ))}
-           
-           
+          <SelectItem value="0-500000">Below ₹5,00,000</SelectItem>
+          <SelectItem value="500000-1000000">₹5,00,000 – ₹10,00,000</SelectItem>
+          <SelectItem value="1000000-1500000">₹10,00,000 – ₹15,00,000</SelectItem>
+          <SelectItem value="1500000+">Above ₹15,00,000</SelectItem>
         </SelectContent>
-        </Select>
-        <Separator orientation="vertical"  className="hidden md:block" />
-
-        <Select onValueChange={(value)=>setPrice(value)}>
-        <SelectTrigger  className="outline-none md:border-none w-full shadow-none text-lg">
+      </Select> */}
+      <Select onValueChange={(value) => setPrice(value)}>
+        <SelectTrigger className="outline-none md:border-none w-full shadow-none text-lg">
             <SelectValue placeholder="Pricing" />
         </SelectTrigger>
         <SelectContent>
-            {Data.Pricing.map((price,index)=>(
-                    <SelectItem value={price.amount}>{price.amount}₹</SelectItem>
+            {Data.Pricing.map((range, index) => (
+            <SelectItem key={index} value={range.value}>
+                {range.label}
+            </SelectItem>
             ))}
         </SelectContent>
         </Select>
-        <Link to={'/search?cars='+cars+"&make="+make+"&price="+price}>
-        <CiSearch  className='text-[50px] bg-primary 
-        rounded-full p-3 text-white hover:scale-105 transition-all cursor-pointer'/>
-        </Link>
+
+      {/* Search button */}
+      <Link to={`/search?${query.toString()}`}>
+        <CiSearch
+          className="text-[50px] bg-primary 
+        rounded-full p-3 text-white hover:scale-105 transition-all cursor-pointer"
+        />
+      </Link>
     </div>
   )
 }

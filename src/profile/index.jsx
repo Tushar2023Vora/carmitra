@@ -1,3 +1,4 @@
+import { UserProfile } from "@clerk/clerk-react";
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import React from 'react'
@@ -22,7 +23,7 @@ function Profile() {
         <MyListing/>
         </TabsContent>
         <TabsContent value="inbox"><Inbox/></TabsContent>
-        <TabsContent value="profile">Profile Tab</TabsContent>
+        <TabsContent value="profile"><UserProfile /></TabsContent>
 
       </Tabs>
 

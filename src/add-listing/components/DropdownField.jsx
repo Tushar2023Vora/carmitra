@@ -1,29 +1,31 @@
 import React from 'react'
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-function DropdownField({item,handleInputChange,carInfo}) {
+function DropdownField({ item, handleInputChange, carInfo, formData }) {
   return (
     <div>
-        <Select onValueChange={(value)=>handleInputChange(item.name,value)}
+      <Select
         required={item.required}
-        defaultValue={carInfo?.[item?.name]}
-        >
+        value={formData?.[item.name] ?? ""}
+        onValueChange={(value) => handleInputChange(item.name, value)}
+      >
         <SelectTrigger className="w-full">
-            <SelectValue placeholder={carInfo?.[item?.name]?carInfo?.[item?.name]:item.label} />
+          <SelectValue placeholder={item.label} />
         </SelectTrigger>
         <SelectContent>
-            {item?.options?.map((option,index)=>(
-            <SelectItem value={option}>{option}</SelectItem>
-            ))}
+          {item?.options?.map((option, index) => (
+            <SelectItem key={index} value={option}>
+              {option}
+            </SelectItem>
+          ))}
         </SelectContent>
-        </Select>
-
+      </Select>
     </div>
   )
 }
